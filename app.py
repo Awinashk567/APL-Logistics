@@ -15,7 +15,7 @@ st.markdown("Predictive intelligence system for global supply chain operations."
 # Data aur Model load karne ke liye caching
 @st.cache_data
 def load_data():
-    df = pd.read_csv(r"D:\UNIFIED MENTOR PROJECT\API DATA SET\APL_Logistics.csv", encoding='latin1')
+    df = pd.read_csv(r"D:\UNIFIED MENTOR PROJECT\Apl Project\APL_Logistics.csv", encoding='latin1')
     return df
 
 @st.cache_resource
