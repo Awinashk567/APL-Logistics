@@ -12,10 +12,10 @@ st.set_page_config(page_title="APL Logistics Risk Dashboard", layout="wide")
 st.title("📦 APL Logistics: Late Delivery Risk Analytics")
 st.markdown("Predictive intelligence system for global supply chain operations.")
 
-# Data aur Model load karne ke liye caching
+# For loading Data and Model use caching
 @st.cache_data
 def load_data():
-    # Yahan path theek kar diya gaya hai (Cloud ke liye)
+    # This is path for cloud
     df = pd.read_csv("APL_Logistics.csv", encoding='latin1')
     return df
 
@@ -31,14 +31,13 @@ def load_model():
 df = load_data()
 model, model_columns = load_model()
 
-# Sidebar Navigation (As per PDF requirements)
+# Sidebar Navigation
 st.sidebar.title("Navigation Menu")
 options = st.sidebar.radio(
     "Select Module:", 
     ["Delay Risk Overview", "Order-Level Risk Prediction", "Region & Mode Risk Analysis", "Operations Action Panel"]
 )
 
-# ---------------------------------------------
 # MODULE 1: DELAY RISK OVERVIEW
 # ---------------------------------------------
 if options == "Delay Risk Overview":
@@ -65,12 +64,11 @@ if options == "Delay Risk Overview":
     ax.set_ylabel("Order Count")
     st.pyplot(fig)
 
-# ---------------------------------------------
 # MODULE 2: ORDER-LEVEL RISK PREDICTION (Future Data Input)
 # ---------------------------------------------
 elif options == "Order-Level Risk Prediction":
     st.header("🔍 Order-Level Risk Prediction (New Order)")
-    st.markdown("Naye ya future orders ki details niche daalein aur check karein ki delivery late hone ka risk hai ya nahi.")
+    st.markdown("Input the new or future order details below and check the risk of late delivery")
     
     # Form layout for user inputs
     with st.form("prediction_form"):
@@ -91,7 +89,7 @@ elif options == "Order-Level Risk Prediction":
         submit_button = st.form_submit_button(label="Predict Delivery Risk")
         
     if submit_button:
-        # User input ko dataframe me convert karna
+        # To covert user inputs into dataframe
         input_data = pd.DataFrame([{
             'Shipping Mode': shipping_mode,
             'Market': market,
@@ -103,12 +101,12 @@ elif options == "Order-Level Risk Prediction":
             'Benefit per order': benefit
         }])
         
-        # Training wale format (One-Hot Encoding) me badalna
+        # To change the format of data for training purpose.
         input_encoded = pd.get_dummies(input_data)
-        # Baki bache columns ko 0 set karna jo is single row me nahi hain
+        #Set 0 to rest of columns which are not present in this single row
         input_encoded = input_encoded.reindex(columns=model_columns, fill_value=0)
         
-        # Prediction karna
+        # Prediction
         prediction = model.predict(input_encoded)[0]
         probability = model.predict_proba(input_encoded)[0][1]
         
@@ -118,13 +116,12 @@ elif options == "Order-Level Risk Prediction":
         else:
             st.success(f"✅ **Low Risk / On-Time!** Ye order time par deliver ho jayega. (Probability: {probability*100:.2f}%)")
 
-# ---------------------------------------------
 # MODULE 3: REGION & MODE RISK ANALYSIS
 # ---------------------------------------------
 elif options == "Region & Mode Analysis" or options == "Region & Mode Risk Analysis":
     st.header("🌎 Region & Shipping Mode Risk Analysis")
     
-    # Filter capability as per PDF
+    # Filter capability
     selected_market = st.selectbox("Select Market to Filter Graphs:", ["All"] + list(df['Market'].unique()))
     
     plot_df = df if selected_market == "All" else df[df['Market'] == selected_market]
@@ -146,12 +143,11 @@ elif options == "Region & Mode Analysis" or options == "Region & Mode Risk Analy
         ax2.set_xlabel("Average Late Risk Probability")
         st.pyplot(fig2)
 
-# ---------------------------------------------
 # MODULE 4: OPERATIONS ACTION PANEL
 # ---------------------------------------------
 elif options == "Operations Action Panel":
     st.header("🚨 Operations Action Panel")
-    st.markdown("Ye un orders ki list hai jinpar immediate attention ki zaroorat hai (High Risk Orders Queue).")
+    st.markdown("This is the list of orders on which immediate attention is required (High Risk Orders Queue).")
     
     # Filtering high risk orders to display as action queue
     high_risk_df = df[df['Late_delivery_risk'] == 1][['Shipping Mode', 'Market', 'Order Region', 'Product Name', 'Days for shipment (scheduled)']].head(20)
